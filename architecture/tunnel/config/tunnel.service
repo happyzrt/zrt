@@ -1,1 +1,16 @@
-1
+[Unit]
+Description=tunnel service
+After=network-online.target  
+Wants=network-online.target 
+
+[Service]
+StandardOutput=journal+console
+StandardError=journal+console
+ExecStart=/zrt/architecture/tunnel/bin/tunnel 192.168.13.1 5757
+ExecStop=/zrt/architecture/tunnel/script/server_stop.sh
+Restart=on-failure
+RestartSec=120
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

@@ -22,5 +22,7 @@ install(TARGETS tunnel
 RUNTIME DESTINATION ${INSTALL_ROOT}/zrt/architecture/tunnel/bin/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../config/tunnel.service
 DESTINATION ${INSTALL_ROOT}/zrt/architecture/tunnel/config/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../config/tunnel.service
+DESTINATION /etc/systemd/system/)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../script
 DESTINATION ${INSTALL_ROOT}/zrt/architecture/tunnel/)
