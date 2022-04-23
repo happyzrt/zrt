@@ -7,6 +7,7 @@ public:
     tunnel_client(std::string local_ip, std::string dst_ip, int dst_port);
     ~tunnel_client();
     virtual bool start_work() override;
+    virtual void stop_work() override;
 private:
     bool start_connect();
 };

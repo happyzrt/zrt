@@ -13,23 +13,29 @@ tunnel_client::tunnel_client(std::string local_ip, std::string dst_ip, int dst_p
 }
 tunnel_client::~tunnel_client()
 {
-    // modify route table
-    std::string cmd("/bin/bash /zrt/architecture/tunnel/script/client_restore.sh");
-    system(cmd.c_str());
 }
 
 bool tunnel_client::start_work()
 {
     bool is_connect_success = start_connect();
     if (is_connect_success) {
-        return tunnel::start_work();
+        tunnel::start_work();
     }
     if (is_connect_success) {
         // modify route table
-        std::string cmd("/bin/bash /zrt/architecture/tunnel/script/client.sh");
+        sleep(1);
+        std::string cmd("/bin/bash /Users/zrt/zrt/architecture/tunnel/script/client.sh");
         system(cmd.c_str());
     }
     return is_connect_success;
+}
+
+void tunnel_client::stop_work()
+{
+    // modify route table
+    std::string cmd("/bin/bash /Users/zrt/zrt/architecture/tunnel/script/client_restore.sh");
+    system(cmd.c_str());
+    tunnel::stop_work();
 }
 
 bool tunnel_client::start_connect()
