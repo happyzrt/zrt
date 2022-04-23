@@ -5,7 +5,8 @@
 class tunnel_client : public tunnel {
 public:
     tunnel_client(std::string local_ip, std::string dst_ip, int dst_port);
-    virtual void start_work() override;
+    ~tunnel_client();
+    virtual bool start_work() override;
 private:
     bool start_connect();
 };

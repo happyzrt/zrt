@@ -12,3 +12,9 @@ target_include_directories(tunnel PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/tun_tap)
 target_link_libraries(tunnel stdc++ pthread)
+install(TARGETS tunnel
+RUNTIME DESTINATION /zrt/architecture/tunnel/bin/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../config/tunnel.service
+DESTINATION /zrt/architecture/tunnel/config/)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../script
+DESTINATION /zrt/architecture/tunnel/)

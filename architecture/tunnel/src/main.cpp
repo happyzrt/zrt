@@ -13,9 +13,12 @@ int main(int argc, char* argv[])
         std::cout << "create tunnel failed" << std::endl;
         return 0;
     }
-    tun->start_work();
+
+    if (tun->start_work()) {
+        int tmp;
+        std::cin >> tmp;
+    }
     
-    int tmp;
-    std::cin >> tmp;
+    tun->stop_work();
     return 0;
 }

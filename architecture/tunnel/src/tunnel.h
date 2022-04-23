@@ -14,7 +14,7 @@ class tunnel {
 public:
     tunnel(std::string local_ipi, bool is_server);
     ~tunnel();
-    virtual void start_work();
+    virtual bool start_work();
     virtual void stop_work();
 protected:
     socket_addr dst_addr;

@@ -10,10 +10,6 @@
 
 tunnel::tunnel(std::string local_ip, bool is_server)
 {
-    socket_id = socket(PF_INET, SOCK_DGRAM, 0);
-    if (socket_id < 0) {
-        std::cout << "open udp socket fail" << std::endl;
-    }
     tun_tap_ip = local_ip;
     gateway = "192.168.13.1";
     this->is_server = is_server;
@@ -21,9 +17,6 @@ tunnel::tunnel(std::string local_ip, bool is_server)
 
 tunnel::~tunnel()
 {
-    if (socket_id > 0) {
-        close(socket_id);
-    }
 }
 
 void tunnel::core(tunnel* tun)
@@ -38,46 +31,63 @@ void tunnel::core(tunnel* tun)
     }
 
     std:: cout << "tunnel ready" << std::endl;
-    bool ready = false;
-    while (!ready) {
-        if (tun->is_server) {
-            uint8_t buff[4096];
-            socklen_t length = sizeof(struct sockaddr_in);
-
-            // get client connect request
-            auto size = recvfrom(tun->socket_id, buff, 4096, 0, (struct sockaddr *)&tun->dest_address, &length);
-            if (memcmp(buff, "hello, tunnel server", size) != 0) {
-                std::cout << "bad request:" << std::string((char*)buff) << std::endl;
-                continue;
-            }
-
-            // send reply to client
-            std::string hello_client = "hello, tunnel client";
-            sendto(tun->socket_id, hello_client.c_str(), hello_client.length(), 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
-            std::cout << "tunnel server ready" << std::endl;
-            ready = true;
-        } else {
-           // send connect request to server
-           std::string hello_server = "hello, tunnel server";
-           sendto(tun->socket_id, hello_server.c_str(), hello_server.length(), 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
-
-           // get confirm from server
-           uint8_t buff[4096];
-           int size = recvfrom(tun->socket_id, buff, 4096, 0, nullptr, nullptr);
-           if (memcmp(buff, "hello, tunnel client", size) == 0) {
-               std::cout << "tunnel client ready" << std::endl;
-               ready = true;
-           }
-        }
-    }
 
     fd_set socket_mask;
     struct timeval wait_time;
     wait_time.tv_sec = 1;
     wait_time.tv_usec = 0;
-    int max_sock = tun_tap_id;
+    int max_sock = tun->socket_id;
+    bool ready = false;
+    if (tun->is_server) {
+        uint8_t buff[4096];
+        socklen_t length = sizeof(struct sockaddr_in);
+
+        // get client connect request
+        FD_ZERO(&socket_mask);
+        FD_SET(tun->socket_id, &socket_mask);
+        if (select(max_sock+1, &socket_mask, nullptr, nullptr, &wait_time) > 0) {
+            if(FD_ISSET(tun->socket_id, &socket_mask)) {
+                auto size = recvfrom(tun->socket_id, buff, 4096, 0, (struct sockaddr *)&tun->dest_address, &length);
+                if (memcmp(buff, "hello, tunnel server", size) != 0) {
+                    std::cout << "bad request:" << std::string((char*)buff) << std::endl;
+                }
+                ready = true;
+            }
+        }
+        if (!ready) {
+            return;
+        }
+
+        // send reply to client
+        std::string hello_client = "hello, tunnel client";
+        sendto(tun->socket_id, hello_client.c_str(), hello_client.length(), 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
+        std::cout << "tunnel server ready" << std::endl;
+    } else {
+        // send connect request to server
+        std::string hello_server = "hello, tunnel server";
+        sendto(tun->socket_id, hello_server.c_str(), hello_server.length(), 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
+
+        // get confirm from server
+        uint8_t buff[4096];
+        FD_ZERO(&socket_mask);
+        FD_SET(tun->socket_id, &socket_mask);
+        if (select(max_sock+1, &socket_mask, nullptr, nullptr, &wait_time) > 0) {
+            if(FD_ISSET(tun->socket_id, &socket_mask)) {
+                int size = recvfrom(tun->socket_id, buff, 4096, 0, nullptr, nullptr);
+                if (memcmp(buff, "hello, tunnel client", size) == 0) {
+                    std::cout << "tunnel client ready" << std::endl;
+                    ready = true;
+                }
+            }
+        }
+        if (!ready) {
+            return;
+        }
+     }
+
     uint8_t buff[4096];
     int size;
+    max_sock = tun_tap_id;
     while(tun->tunnel_working) {
         FD_ZERO(&socket_mask);
         FD_SET(tun->socket_id, &socket_mask);
@@ -113,9 +123,13 @@ void tunnel::core(tunnel* tun)
     }
 }
 
-void tunnel::start_work()
+bool tunnel::start_work()
 {
     tunnel_working = true;
+    socket_id = socket(PF_INET, SOCK_DGRAM, 0);
+    if (socket_id < 0) {
+        std::cout << "open udp socket fail" << std::endl;
+    }
     if (is_server) {
         // server side bind local port
         struct sockaddr_in local_address;
@@ -133,10 +147,14 @@ void tunnel::start_work()
     }
     std::thread worker(core, this);
     worker.detach();
+    return true;
 }
 
 void tunnel::stop_work()
 {
     tunnel_working = false;
     std::lock_guard<std::mutex> lck(lock);
+    if (socket_id > 0) {
+        close(socket_id);
+    }
 }

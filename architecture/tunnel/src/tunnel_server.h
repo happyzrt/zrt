@@ -5,7 +5,7 @@
 class tunnel_server : public tunnel {
 public:
     tunnel_server(std::string local_ip, uint16_t port);
-    virtual void start_work() override;
+    virtual bool start_work() override;
 private:
     static void listener(tunnel_server* server);
     void accept_connect();

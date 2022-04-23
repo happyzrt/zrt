@@ -46,10 +46,11 @@ void tunnel_server::listener(tunnel_server* server)
     }
 }
 
-void tunnel_server::start_work()
+bool tunnel_server::start_work()
 {
     std::thread server(listener, this);
     server.detach();
+    return true;
 }
 
 void tunnel_server::accept_connect()
@@ -69,11 +70,18 @@ void tunnel_server::accept_connect()
     tunnel::stop_work();
 
     // start new connection
-    tunnel::start_work();
+    if (!tunnel::start_work()) {
+        tunnel::stop_work();
+        return;
+    }
 
     // send reply to client
     std::string hello_client = "hello, tunnel client";
     sendto(listener_id, hello_client.c_str(), hello_client.length(), 0, (struct sockaddr *)&client_addr, sizeof(struct sockaddr_in));
     dst_addr.ip = inet_ntoa(client_addr.sin_addr);
     std::cout << "nego success: " << dst_addr.ip << std::endl;
+
+    // open server router function
+    std::string cmd("/usr/bin/bash /zrt/architecture/tunnel/script/server.sh ");
+    system(cmd.c_str());
 }
