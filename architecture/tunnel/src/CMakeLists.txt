@@ -12,9 +12,15 @@ target_include_directories(tunnel PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/tun_tap)
 target_link_libraries(tunnel stdc++ pthread)
+
+set (INSTALL_ROOT "/")
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+set (INSTALL_ROOT "/Users/zrt/")
+endif()
+message(${INSTALL_ROOT})
 install(TARGETS tunnel
-RUNTIME DESTINATION /zrt/architecture/tunnel/bin/)
+RUNTIME DESTINATION ${INSTALL_ROOT}/zrt/architecture/tunnel/bin/)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../config/tunnel.service
-DESTINATION /zrt/architecture/tunnel/config/)
+DESTINATION ${INSTALL_ROOT}/zrt/architecture/tunnel/config/)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../script
-DESTINATION /zrt/architecture/tunnel/)
+DESTINATION ${INSTALL_ROOT}/zrt/architecture/tunnel/)
