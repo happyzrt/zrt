@@ -1,0 +1,27 @@
+@startuml
+!include security.uml
+class tunnel {
+    +tunnel(string local_ip)
+    +~tunnel()
+    +start_work()
+    -tun_id
+    -socket_id
+    -dst_addr
+}
+class tunnel_client {
+    +tunnel(string loacl_ip, string dst_ip, int dst_port)
+}
+class tunnel_server {
+    +tunnel(string loacl_ip, int serve_port)
+}
+class tunnel_factory {
+    +instance()
+    +tunnel* get_tunnel(string para)
+    -para_check(string para)
+}
+tunnel ..> security
+tunnel <|-- tunnel_client
+tunnel <|-- tunnel_server
+tunnel_factory ..> tunnel_client
+tunnel_factory ..> tunnel_server
+@enduml
