@@ -119,6 +119,8 @@ void tunnel::core(tunnel* tun)
                sendto(tun->socket_id, buff, size, 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
                #endif
            } 
+        } else {
+            usleep(1000);
         }
     }
 }

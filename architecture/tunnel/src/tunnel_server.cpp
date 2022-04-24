@@ -42,6 +42,8 @@ void tunnel_server::listener(tunnel_server* server)
             if(FD_ISSET(server->listener_id, &socket_mask)) {
                 server->accept_connect();
             }
+        } else {
+            sleep(1);
         }
     }
 }
