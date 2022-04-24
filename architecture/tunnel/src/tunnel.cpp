@@ -8,6 +8,18 @@
 #include <iostream>
 #include "tun.h"
 
+namespace {
+void process_buff(uint8_t* buff, int size)
+{
+    uint8_t tmp;
+    for (int i = 0; i < size/2; i++) {
+        tmp = buff[i];
+        buff[i] = buff[size - i - 1];
+        buff[size - i - 1] = tmp;
+    }
+}
+}
+
 tunnel::tunnel(std::string local_ip, bool is_server)
 {
     tun_tap_ip = local_ip;
@@ -99,6 +111,7 @@ void tunnel::core(tunnel* tun)
         if (select(max_sock+1, &socket_mask, nullptr, nullptr, &wait_time) > 0) {
            if(FD_ISSET(tun->socket_id, &socket_mask)) {
                size = recvfrom(tun->socket_id, buff, 4096, 0, nullptr, nullptr);
+               process_buff(buff, size);
                #ifdef OSX_SYSTEM
                static uint8_t head_buffer[4096] = {0, 0, 0, 2};
                memcpy(head_buffer + 4, buff, size);
@@ -114,8 +127,10 @@ void tunnel::core(tunnel* tun)
                if (size <= 4) {
                    continue;
                }
+               process_buff(buff + 4, size - 4);
                sendto(tun->socket_id, buff + 4, size - 4, 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
                #else
+               process_buff(buff, size);
                sendto(tun->socket_id, buff, size, 0, (struct sockaddr *)&tun->dest_address, sizeof(struct sockaddr_in));
                #endif
            } 
