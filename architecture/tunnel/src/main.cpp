@@ -4,16 +4,12 @@
 #include <vector>
 #include "tunnel_factory.h"
 
-tunnel* tun = nullptr;
 void sig_handle(int num)
 {
-    if (tun != nullptr) {
-        tun->stop_work();
-        tun = nullptr;
-    }
 }
 int main(int argc, char* argv[])
 {
+    tunnel* tun = nullptr;
     std::vector<std::string> para;
     for (int i = 1; i < argc; i++) {
         para.emplace_back(std::string(argv[i]));
@@ -36,6 +32,7 @@ int main(int argc, char* argv[])
     sigaddset(&set, SIGINT);
     int num;
     sigwait(&set, &num);
+    tun->stop_work();
     std::cout << num << std::endl;
     return 0;
 }
