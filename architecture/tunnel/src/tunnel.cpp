@@ -33,7 +33,7 @@ void tunnel::core(tunnel* tun)
 {
     std::lock_guard<std::mutex> lck(tun->lock);
     // open tun
-    class tun tun_tap(tun->tun_tap_ip, "255.255.255.0", tun->gateway, 1500);
+    class tun tun_tap(tun->tun_tap_ip, "255.255.255.0", tun->gateway, 1300);
     int tun_tap_id = tun_tap.open();
     if (tun_tap_id < 0) {
         std::cout << "open tun_tap failed" << std::endl;
