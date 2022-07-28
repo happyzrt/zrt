@@ -12,10 +12,8 @@ namespace {
 void process_buff(uint8_t* buff, int size)
 {
     uint8_t tmp;
-    for (int i = 0; i < size/2; i++) {
-        tmp = buff[i];
-        buff[i] = buff[size - i - 1];
-        buff[size - i - 1] = tmp;
+    for (int i = 0; i < size; i++) {
+        buff[i] = ~buff[i];
     }
 }
 }
