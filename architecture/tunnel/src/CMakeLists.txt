@@ -7,11 +7,18 @@ else()
 list(APPEND SRC_LIST ${CMAKE_CURRENT_SOURCE_DIR}/tun_tap/tun_osx.cpp)
 add_definitions(-DOSX_SYSTEM)
 endif()
+if(TUNNEL_ONEFILE MATCHES "yes")
+add_executable(tunnel ${CMAKE_CURRENT_SOURCE_DIR}/onefile/tunnel.c)
+target_link_libraries(tunnel pthread)
+message("onefile")
+else()
 add_executable(tunnel ${SRC_LIST})
 target_include_directories(tunnel PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/tun_tap)
 target_link_libraries(tunnel stdc++ pthread)
+message("default")
+endif()
 
 set (INSTALL_ROOT "/")
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
