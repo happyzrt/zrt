@@ -25,6 +25,7 @@ bool tunnel_client::start_work()
         // modify route table
         sleep(1);
         std::string cmd("/bin/bash /Users/zrt/zrt/architecture/tunnel/script/client.sh");
+        cmd = cmd + " " + dst_addr.ip;
         system(cmd.c_str());
     }
     return is_connect_success;
@@ -34,6 +35,7 @@ void tunnel_client::stop_work()
 {
     // modify route table
     std::string cmd("/bin/bash /Users/zrt/zrt/architecture/tunnel/script/client_restore.sh");
+    cmd = cmd + " " + dst_addr.ip;
     system(cmd.c_str());
     tunnel::stop_work();
 }
